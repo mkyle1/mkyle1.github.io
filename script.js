@@ -1,3 +1,5 @@
+import {player_path, obst_path} from './object_paths.js';
+
 function distance(x1,y1,x2,y2){
     let dx = x1 - x2;
     let dy = y1 - y2;
@@ -12,6 +14,7 @@ window.onload = function () {
     var height = canvas.height = window.innerHeight - 20;
     var recPath;
     var radius = 30;
+    var wallSpeed = 1;
     var playerHandle = {
         x: width / 2,
         y: height - 2 * radius,
@@ -27,6 +30,10 @@ window.onload = function () {
         x_r3: 0,
         y_r3: 0,
     };
+    var wallHandles = [{
+        x: 0,
+        y: 0,
+    }];
     var canvasHandle = {
         x_left: 0,
         x_right: width,
@@ -37,9 +44,11 @@ window.onload = function () {
     function draw() {
         context.clearRect(0, 0, width, height);
         //drawRectangle(playerHandle.x, playerHandle.y);
-        drawPathFunc(context, object_path(), 1, playerHandle.x, playerHandle.y, playerHandle.rotation , "blue");
+        drawPathFunc(context, player_path(radius), 1, playerHandle.x, playerHandle.y, playerHandle.rotation , "blue");
         drawPathFunc(context, laser_path(), 1, playerHandle.x_tip, playerHandle.y_tip, playerHandle.rotation, "red");
-        drawPathFunc(context, laser_path(), 1, reflectionHandle.x_r1, reflectionHandle.y_r1, playerHandle.rotation, "yellow");      
+        drawPathFunc(context, laser_path(), 1, reflectionHandle.x_r1, reflectionHandle.y_r1, playerHandle.rotation, "yellow");
+        drawPathFunc(context, obst_path(width), 1, wallHandles[0].x, wallHandles[0].y, 0, "orange");
+
         drawLaser();
         if(reflectionHandle.y_r1 > 0){
             drawReflection();
@@ -47,9 +56,19 @@ window.onload = function () {
         if(reflectionHandle.y_r2 > 0){
             drawReflection2();
         }
-
+        //wallHandles[0].x ++;
+        moveWall(0);
+        console.log("Tick");
         requestAnimationFrame(draw);
     }draw();
+
+    function moveWall(wallIndex) {
+        wallHandles[wallIndex].y += wallSpeed;
+        if(wallHandles[wallIndex].y > playerHandle.y){
+            wallHandles.splice(wallIndex, 1);
+            wallHandles.splice(wallIndex, 0, {x: 0, y: 0});
+        }
+    }
 
     function drawLaser() {
         let incline = (playerHandle.y_tip - playerHandle.y) / (playerHandle.x_tip - playerHandle.x);
@@ -139,18 +158,6 @@ window.onload = function () {
         context.stroke();
     };
 
-    function object_path() {    //path for player figure
-        let path = new Path2D();
-        path.arc(0, 0, radius, 0, Math.PI * 2, true);
-        path.moveTo(0, -48);
-        path.lineTo(12, -27);
-        path.lineTo(-12, -27);
-        //path.arcTo(2, -9, -2, -9, 10);
-        path.lineTo(0, -48);
-        path.closePath();
-        return path;
-    }
-
     function laser_path() {   //path for dot for testing
         let path = new Path2D();
         path.arc(0, 0, 5, 0, Math.PI * 2, true);
@@ -215,8 +222,6 @@ window.onload = function () {
 
         playerHandle.x = event.touches[0].clientX;
         updateRotation();
-        //playerHandle.y = event.touches[0].clientY;
-        draw();
     }
 
     function updateRotation() {
