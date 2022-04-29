@@ -1,4 +1,4 @@
-import {player_path, obst_path} from './object_paths.js';
+import {player_path, obst_path, broken_obst_path, obst2, obst2_middle} from './object_paths.js';
 
 function distance(x1,y1,x2,y2){
     let dx = x1 - x2;
@@ -15,10 +15,11 @@ window.onload = function () {
     var recPath;
     var radius = 30;
     var wallSpeed = 1;
+    var dead = false;
     var playerHandle = {
         x: width / 2,
         y: height - 2 * radius,
-        rotation: 0,
+        rotation: 1,
         x_tip: 0,
         y_tip: -48,
     };
@@ -33,7 +34,8 @@ window.onload = function () {
     var wallHandles = [{
         x: 0,
         y: 0,
-    }];
+        }];
+    wallHandles.push({x: 0, y: -600});
     var canvasHandle = {
         x_left: 0,
         x_right: width,
@@ -47,7 +49,12 @@ window.onload = function () {
         drawPathFunc(context, player_path(radius), 1, playerHandle.x, playerHandle.y, playerHandle.rotation , "blue");
         drawPathFunc(context, laser_path(), 1, playerHandle.x_tip, playerHandle.y_tip, playerHandle.rotation, "red");
         drawPathFunc(context, laser_path(), 1, reflectionHandle.x_r1, reflectionHandle.y_r1, playerHandle.rotation, "yellow");
-        drawPathFunc(context, obst_path(width), 1, wallHandles[0].x, wallHandles[0].y, 0, "orange");
+        //drawPathFunc(context, obst_path(width), 1, wallHandles[0].x, wallHandles[0].y, 0, "orange");
+        //wallHandles.push({x: 0, y: -600});
+        //console.dir(wallHandles);
+        //drawPathFunc(context, broken_obst_path(width), 1, wallHandles[1].x, wallHandles[1].y, 0, "purple");
+        drawPathFunc(context, obst2(width), 1, wallHandles[0].x, wallHandles[0].y, 0, "orange");
+        drawPathFunc(context, obst2_middle(width), 1, wallHandles[0].x, wallHandles[0].y, 0, "green");
 
         drawLaser();
         if(reflectionHandle.y_r1 > 0){
@@ -56,10 +63,14 @@ window.onload = function () {
         if(reflectionHandle.y_r2 > 0){
             drawReflection2();
         }
+
         //wallHandles[0].x ++;
-        moveWall(0);
-        console.log("Tick");
-        requestAnimationFrame(draw);
+        for(var i = 0; i < wallHandles.length; i++){
+            moveWall(i);
+        }
+        if(!dead) {
+            requestAnimationFrame(draw);
+        }
     }draw();
 
     function moveWall(wallIndex) {
