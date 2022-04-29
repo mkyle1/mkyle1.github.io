@@ -1,10 +1,16 @@
-import {player_path, obst_path, broken_obst_path, obst2, obst2_middle} from './object_paths.js';
+import {player_path, obst_path, broken_obst_path, obst0, obst0_destructable, obst1, obst1_destructable, obst2, obst2_destructable, obst3, obst3_destructable, obst4, obst4_destructable} from './object_paths.js';
 
 function distance(x1,y1,x2,y2){
     let dx = x1 - x2;
     let dy = y1 - y2;
     return Math.sqrt(dx * dx + dy * dy);
 }
+
+function getRandomIntInclusive(min, max) {
+    min = Math.ceil(min);
+    max = Math.floor(max);
+    return Math.floor(Math.random() * (max - min +1)) + min;
+  }
 
 window.onload = function () {
     var canvas = document.getElementById('myCanvas');
@@ -16,6 +22,10 @@ window.onload = function () {
     var radius = 30;
     var wallSpeed = 1;
     var dead = false;
+    var ticksSinceLastObstacle = 0;
+    var maxWallHandles = 10
+    var nextWallHandleIndex = 0;
+
     var playerHandle = {
         x: width / 2,
         y: height - 2 * radius,
@@ -31,10 +41,7 @@ window.onload = function () {
         x_r3: 0,
         y_r3: 0,
     };
-    var wallHandles = [{
-        x: 0,
-        y: 0,
-        }];
+    var wallHandles = [];
     wallHandles.push({x: 0, y: -600});
     var canvasHandle = {
         x_left: 0,
@@ -53,9 +60,50 @@ window.onload = function () {
         //wallHandles.push({x: 0, y: -600});
         //console.dir(wallHandles);
         //drawPathFunc(context, broken_obst_path(width), 1, wallHandles[1].x, wallHandles[1].y, 0, "purple");
-        drawPathFunc(context, obst2(width), 1, wallHandles[0].x, wallHandles[0].y, 0, "orange");
-        drawPathFunc(context, obst2_middle(width), 1, wallHandles[0].x, wallHandles[0].y, 0, "green");
+        /* drawPathFunc(context, obst4(width), 1, wallHandles[0].x, wallHandles[0].y, 0, "orange");
+        drawPathFunc(context, obst4_destructable(width), 1, wallHandles[0].x, wallHandles[0].y, 0, "red"); */
 
+        //get the needed amount of wall handles
+        if (wallHandles.length < maxWallHandles) {
+            for(let i = 0; i < maxWallHandles; i++){
+                wallHandles.push({x: 0, y: 0});
+            }
+        }
+        //drawWall(0, obst4(width), obst4_destructable(width));
+        if(ticksSinceLastObstacle > 1000){
+            console.log("new wall");
+            var random_obstacle = getRandomIntInclusive(0,4);
+            var color = getRandomIntInclusive(0, 1);
+            switch (random_obstacle) {
+                case 0:
+                    handleWallHandleIndex();
+                    drawWall(color, obst0(width), obst0_destructable(width));
+                    break;
+                case 1:
+                    handleWallHandleIndex();
+                    drawWall(color, obst1(width), obst1_destructable(width));
+                    break;
+                case 2:
+                    handleWallHandleIndex();
+                    drawWall(color, obst2(width), obst2_destructable(width));
+                    break;
+                case 3:
+                    handleWallHandleIndex();
+                    drawWall(color, obst3(width), obst3_destructable(width));
+                    break;
+                case 4:
+                    handleWallHandleIndex();
+                    drawWall(color, obst4(width), obst4_destructable(width));
+                    break;
+                default:
+                    break;
+
+            }
+            ticksSinceLastObstacle = 0;
+        }
+        ticksSinceLastObstacle++;
+
+        //Drawing the laser and its reflections
         drawLaser();
         if(reflectionHandle.y_r1 > 0){
             drawReflection();
@@ -64,14 +112,33 @@ window.onload = function () {
             drawReflection2();
         }
 
-        //wallHandles[0].x ++;
+        //move all walls in the array
         for(var i = 0; i < wallHandles.length; i++){
             moveWall(i);
         }
+
+        //if collided
         if(!dead) {
             requestAnimationFrame(draw);
         }
     }draw();
+
+    function drawWall(color, path, path_destructable) {
+        drawPathFunc(context, path, 1, 0, wallHandles[nextWallHandleIndex].y, 0, "orange");
+        if(color == 0){     //0 = red
+            drawPathFunc(context, path_destructable, 1, 0, wallHandles[nextWallHandleIndex].y, 0, "red");
+        } else {
+            drawPathFunc(context, path_destructable, 1, 0, wallHandles[nextWallHandleIndex].y, 0, "green");
+        }
+    }
+
+    function handleWallHandleIndex () {
+        if (nextWallHandleIndex + 1 >= maxWallHandles) {
+            nextWallHandleIndex = 0;
+        } else if (nextWallHandleIndex + 1 < maxWallHandles) {
+            nextWallHandleIndex++;
+        }
+    }
 
     function moveWall(wallIndex) {
         wallHandles[wallIndex].y += wallSpeed;
@@ -195,7 +262,7 @@ window.onload = function () {
             console.log("Touch is not inside");
             return false;
         } */
-        let inside = distance(playerHandle.x, playerHandle.y, ix, iy) < radius;
+        let inside = distance(playerHandle.x, playerHandle.y, ix, iy) < radius * 1.5;
         return inside;
     }
 
@@ -203,7 +270,7 @@ window.onload = function () {
         if (event.touches.length === 1 && isInside(event.touches[0].pageX, event.touches[0].pageY)) {
                 document.body.addEventListener("touchmove", onTouchMove);
                 document.body.addEventListener("touchend", onTouchEnd);
-                console.log("Touch is inside");
+                //console.log("Touch is inside");
         } else if (event.touches.length === 2) {
             event.preventDefault();
             document.body.addEventListener("touchmove", onTouchRotate);
