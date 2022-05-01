@@ -25,6 +25,7 @@ window.onload = function () {
     var ticksSinceLastObstacle = 0;
     var maxWallHandles = 10
     var nextWallHandleIndex = 0;
+    var activeWalls = [];
 
     var playerHandle = {
         x: width / 2,
@@ -42,7 +43,7 @@ window.onload = function () {
         y_r3: 0,
     };
     var wallHandles = [];
-    wallHandles.push({x: 0, y: -600});
+    //wallHandles.push({x: 0, y: 0});
     var canvasHandle = {
         x_left: 0,
         x_right: width,
@@ -64,42 +65,58 @@ window.onload = function () {
         drawPathFunc(context, obst4_destructable(width), 1, wallHandles[0].x, wallHandles[0].y, 0, "red"); */
 
         //get the needed amount of wall handles
-        if (wallHandles.length < maxWallHandles) {
-            for(let i = 0; i < maxWallHandles; i++){
+        if (wallHandles.length <= activeWalls.length) {
+            for(let i = 0; i <= activeWalls.length; i++){
                 wallHandles.push({x: 0, y: 0});
             }
         }
         //drawWall(0, obst4(width), obst4_destructable(width));
-        if(ticksSinceLastObstacle > 1000){
-            console.log("new wall");
+        if(ticksSinceLastObstacle > 600){
+            console.log("---- NEW OBSTACLE ----");
             var random_obstacle = getRandomIntInclusive(0,4);
             var color = getRandomIntInclusive(0, 1);
             switch (random_obstacle) {
                 case 0:
-                    handleWallHandleIndex();
-                    drawWall(color, obst0(width), obst0_destructable(width));
+                    //handleWallHandleIndex();
+                    activeWalls.push({path: obst0(width), path_destructable: obst0_destructable(width), color: color});
+                    //drawWall(color, obst0(width), obst0_destructable(width));
                     break;
                 case 1:
-                    handleWallHandleIndex();
-                    drawWall(color, obst1(width), obst1_destructable(width));
+                    //handleWallHandleIndex();
+                    activeWalls.push({path: obst1(width), path_destructable: obst1_destructable(width), color: color});
+                    //drawWall(color, obst1(width), obst1_destructable(width));
                     break;
                 case 2:
-                    handleWallHandleIndex();
-                    drawWall(color, obst2(width), obst2_destructable(width));
+                    //handleWallHandleIndex();
+                    activeWalls.push({path: obst2(width), path_destructable: obst2_destructable(width), color: color});
+                    //drawWall(color, obst2(width), obst2_destructable(width));
                     break;
                 case 3:
-                    handleWallHandleIndex();
-                    drawWall(color, obst3(width), obst3_destructable(width));
+                    //handleWallHandleIndex();
+                    activeWalls.push({path: obst3(width), path_destructable: obst3_destructable(width), color: color});
+                    //drawWall(color, obst3(width), obst3_destructable(width));
                     break;
                 case 4:
-                    handleWallHandleIndex();
-                    drawWall(color, obst4(width), obst4_destructable(width));
+                    //handleWallHandleIndex();
+                    activeWalls.push({path: obst4(width), path_destructable: obst4_destructable(width), color: color});
+                    //drawWall(color, obst4(width), obst4_destructable(width));
                     break;
                 default:
                     break;
 
             }
             ticksSinceLastObstacle = 0;
+        }
+        //Safe currently active walls in array!!!!
+        nextWallHandleIndex = 0;
+        for(let i = 0; i < activeWalls.length; i++){
+            drawWall(activeWalls[i].color, activeWalls[i].path, activeWalls[i].path_destructable, i);
+        }
+
+
+        if(ticksSinceLastObstacle % 200 == 0){
+            console.dir(activeWalls);
+            console.dir(wallHandles);
         }
         ticksSinceLastObstacle++;
 
@@ -113,7 +130,7 @@ window.onload = function () {
         }
 
         //move all walls in the array
-        for(var i = 0; i < wallHandles.length; i++){
+        for(var i = 0; i < activeWalls.length; i++){
             moveWall(i);
         }
 
@@ -123,19 +140,19 @@ window.onload = function () {
         }
     }draw();
 
-    function drawWall(color, path, path_destructable) {
-        drawPathFunc(context, path, 1, 0, wallHandles[nextWallHandleIndex].y, 0, "orange");
+    function drawWall(color, path, path_destructable, index) {
+        drawPathFunc(context, path, 1, 0, wallHandles[index].y, 0, "orange");
         if(color == 0){     //0 = red
-            drawPathFunc(context, path_destructable, 1, 0, wallHandles[nextWallHandleIndex].y, 0, "red");
+            drawPathFunc(context, path_destructable, 1, 0, wallHandles[index].y, 0, "red");
         } else {
-            drawPathFunc(context, path_destructable, 1, 0, wallHandles[nextWallHandleIndex].y, 0, "green");
+            drawPathFunc(context, path_destructable, 1, 0, wallHandles[index].y, 0, "green");
         }
     }
 
     function handleWallHandleIndex () {
-        if (nextWallHandleIndex + 1 >= maxWallHandles) {
+        if (nextWallHandleIndex + 1 >= activeWalls.length) {
             nextWallHandleIndex = 0;
-        } else if (nextWallHandleIndex + 1 < maxWallHandles) {
+        } else if (nextWallHandleIndex + 1 < activeWalls.length) {
             nextWallHandleIndex++;
         }
     }
@@ -143,8 +160,11 @@ window.onload = function () {
     function moveWall(wallIndex) {
         wallHandles[wallIndex].y += wallSpeed;
         if(wallHandles[wallIndex].y > playerHandle.y){
-            wallHandles.splice(wallIndex, 1);
-            wallHandles.splice(wallIndex, 0, {x: 0, y: 0});
+            /* wallHandles.splice(wallIndex, 1);
+            wallHandles.splice(wallIndex, 0, {x: 0, y: 0}); */
+            activeWalls.shift();
+            wallHandles.shift();
+            console.log("---- Lowest Wall Removed ----");
         }
     }
 
