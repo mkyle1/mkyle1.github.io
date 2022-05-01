@@ -20,7 +20,7 @@ window.onload = function () {
     var height = canvas.height = window.innerHeight - 20;
     var recPath;
     var radius = 30;
-    var wallSpeed = 1;
+    var wallSpeed = 1.5;
     var dead = false;
     var ticksSinceLastObstacle = 0;
     var maxWallHandles = 10
@@ -71,7 +71,7 @@ window.onload = function () {
             }
         }
         //drawWall(0, obst4(width), obst4_destructable(width));
-        if(ticksSinceLastObstacle > 600){
+        if(ticksSinceLastObstacle > 500){
             console.log("---- NEW OBSTACLE ----");
             var random_obstacle = getRandomIntInclusive(0,4);
             var color = getRandomIntInclusive(0, 1);
