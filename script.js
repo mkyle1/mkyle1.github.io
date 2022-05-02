@@ -26,6 +26,13 @@ window.onload = function () {
     var maxWallHandles = 10
     var nextWallHandleIndex = 0;
     var activeWalls = [];
+    var gapWidth = 120;
+
+    //var boolean = false;
+    var timer = 0;
+
+    var obstaclePaths = [obst0(width), obst1(width), obst2(width), obst3(width), obst4(width)];
+    var destructableObstaclePaths = [obst0_destructable(width), obst1_destructable(width), obst2_destructable(width), obst3_destructable(width), obst4_destructable(width)];
 
     var playerHandle = {
         x: width / 2,
@@ -57,12 +64,15 @@ window.onload = function () {
         drawPathFunc(context, player_path(radius), 1, playerHandle.x, playerHandle.y, playerHandle.rotation , "blue");
         drawPathFunc(context, laser_path(), 1, playerHandle.x_tip, playerHandle.y_tip, playerHandle.rotation, "red");
         drawPathFunc(context, laser_path(), 1, reflectionHandle.x_r1, reflectionHandle.y_r1, playerHandle.rotation, "yellow");
-        //drawPathFunc(context, obst_path(width), 1, wallHandles[0].x, wallHandles[0].y, 0, "orange");
-        //wallHandles.push({x: 0, y: -600});
-        //console.dir(wallHandles);
-        //drawPathFunc(context, broken_obst_path(width), 1, wallHandles[1].x, wallHandles[1].y, 0, "purple");
-        /* drawPathFunc(context, obst4(width), 1, wallHandles[0].x, wallHandles[0].y, 0, "orange");
-        drawPathFunc(context, obst4_destructable(width), 1, wallHandles[0].x, wallHandles[0].y, 0, "red"); */
+
+        /* if(boolean == true){
+            drawPathFunc(context, player_path(radius), 1, 300,400, 0 , "purple");
+            if(timer >= 200){
+                boolean = false;
+                timer = 0;
+            }
+            timer++;
+        } */
 
         //get the needed amount of wall handles
         if (wallHandles.length <= activeWalls.length) {
@@ -78,27 +88,52 @@ window.onload = function () {
             switch (random_obstacle) {
                 case 0:
                     //handleWallHandleIndex();
-                    activeWalls.push({path: obst0(width), path_destructable: obst0_destructable(width), color: color});
+                    activeWalls.push({path: obst0(width)
+                        , path_destructable: obst0_destructable(width)
+                        , color: color
+                        , l_border: 0
+                        , r_border: gapWidth
+                        , destroyed: false});
                     //drawWall(color, obst0(width), obst0_destructable(width));
                     break;
                 case 1:
                     //handleWallHandleIndex();
-                    activeWalls.push({path: obst1(width), path_destructable: obst1_destructable(width), color: color});
+                    activeWalls.push({path: obst1(width)
+                        , path_destructable: obst1_destructable(width)
+                        , color: color
+                        , l_border: 1/6 * width
+                        , r_border: 1/6 * width + gapWidth
+                        , destroyed: false});
                     //drawWall(color, obst1(width), obst1_destructable(width));
                     break;
                 case 2:
                     //handleWallHandleIndex();
-                    activeWalls.push({path: obst2(width), path_destructable: obst2_destructable(width), color: color});
+                    activeWalls.push({path: obst2(width)
+                        , path_destructable: obst2_destructable(width)
+                        , color: color
+                        , l_border: 2/6 * width
+                        , r_border: 2/6 * width + gapWidth
+                        , destroyed: false});
                     //drawWall(color, obst2(width), obst2_destructable(width));
                     break;
                 case 3:
                     //handleWallHandleIndex();
-                    activeWalls.push({path: obst3(width), path_destructable: obst3_destructable(width), color: color});
+                    activeWalls.push({path: obst3(width)
+                        , path_destructable: obst3_destructable(width)
+                        , color: color
+                        , l_border: 3/6 * width
+                        , r_border: 3/6 * width + gapWidth
+                        , destroyed: false});
                     //drawWall(color, obst3(width), obst3_destructable(width));
                     break;
                 case 4:
                     //handleWallHandleIndex();
-                    activeWalls.push({path: obst4(width), path_destructable: obst4_destructable(width), color: color});
+                    activeWalls.push({path: obst4(width)
+                        , path_destructable: obst4_destructable(width)
+                        , color: color
+                        , l_border: 4/6 * width
+                        , r_border: 4/6 * width + gapWidth
+                        , destroyed: false});
                     //drawWall(color, obst4(width), obst4_destructable(width));
                     break;
                 default:
@@ -113,11 +148,20 @@ window.onload = function () {
             drawWall(activeWalls[i].color, activeWalls[i].path, activeWalls[i].path_destructable, i);
         }
 
+        if(isInsideWall(playerHandle.x, playerHandle.y)){
+            if(timer > 20) {
+            console.log("---- PLAYER INSIDE WALL ----");
+            console.dir(wallHandles)
+            timer = 0;
+            }
+            timer++;
+        }
 
-        if(ticksSinceLastObstacle % 200 == 0){
+
+        /* if(ticksSinceLastObstacle % 200 == 0){
             console.dir(activeWalls);
             console.dir(wallHandles);
-        }
+        } */
         ticksSinceLastObstacle++;
 
         //Drawing the laser and its reflections
@@ -142,18 +186,12 @@ window.onload = function () {
 
     function drawWall(color, path, path_destructable, index) {
         drawPathFunc(context, path, 1, 0, wallHandles[index].y, 0, "orange");
-        if(color == 0){     //0 = red
-            drawPathFunc(context, path_destructable, 1, 0, wallHandles[index].y, 0, "red");
-        } else {
-            drawPathFunc(context, path_destructable, 1, 0, wallHandles[index].y, 0, "green");
-        }
-    }
-
-    function handleWallHandleIndex () {
-        if (nextWallHandleIndex + 1 >= activeWalls.length) {
-            nextWallHandleIndex = 0;
-        } else if (nextWallHandleIndex + 1 < activeWalls.length) {
-            nextWallHandleIndex++;
+        if(activeWalls[index].destroyed == false){
+            if(color == 0){     //0 = red
+                drawPathFunc(context, path_destructable, 1, 0, wallHandles[index].y, 0, "red");
+            } else {
+                drawPathFunc(context, path_destructable, 1, 0, wallHandles[index].y, 0, "green");
+            }
         }
     }
 
@@ -275,15 +313,47 @@ window.onload = function () {
 
 
     function isInside(ix, iy) {
-        /* if (context.isPointInPath(object_path(), ix, iy)) {
-            console.log("Touch is inside");
-            return true;
-        } else {
-            console.log("Touch is not inside");
-            return false;
-        } */
         let inside = distance(playerHandle.x, playerHandle.y, ix, iy) < radius * 1.5;
         return inside;
+    }
+
+    function isInsideWall(){
+        if(playerHandle.y <= wallHandles[0].y + 30 && playerHandle.y >= wallHandles[0].y){
+            if(activeWalls[0].destroyed == true) {
+                if(playerHandle.x >= activeWalls[0].l_border && playerHandle.x <= activeWalls[0].r_border){
+                    return false;
+                } else {
+                    //dead = true;
+                    return true;
+                }
+            } else {
+                //dead = true;
+                return true;
+            }
+        } else {
+            return false;
+        }
+    }
+
+    function isInsidePath(ix, iy) {
+        for(let i in obstaclePaths) {
+            if (context.isPointInPath(obstaclePaths[i], ix, iy)) {
+                console.log("---- IS INSIDE ----");
+                return true;
+            } else {
+                console.log("---- IS NOT INSIDE ----");
+                return false;
+            }
+        }
+        for(let i in destructableObstaclePaths) {
+            if (context.isPointInPath(destructableObstaclePaths[i], ix, iy)) {
+                console.log("---- IS INSIDE ----");
+                return true;
+            } else {
+                console.log("---- IS NOT INSIDE ----");
+                return false;
+            }
+        }
     }
 
     document.body.addEventListener("touchstart", function (event) {
@@ -296,8 +366,16 @@ window.onload = function () {
             document.body.addEventListener("touchmove", onTouchRotate);
             document.body.addEventListener("touchend", onTouchEnd);
         } else if (event.touches.length === 3) {
+            /* event.preventDefault();
+            document.body.addEventListener("touchmove", onTouchRotate);
+            document.body.addEventListener("onclick", onTouchShoot);
+            document.body.addEventListener("touchend", onTouchEnd); */
         }
     }, {passive: false});
+
+    /* function onTouchShoot(event) {
+        boolean = true;
+    } */
 
     function onTouchRotate(event) {
         event.preventDefault();
@@ -322,7 +400,7 @@ window.onload = function () {
         updateRotation();
     }
 
-    function updateRotation() {
+    function updateRotation() {     //tracks the tip of the player when rotated
         playerHandle.x_tip =  playerHandle.x + (radius + 13) * Math.sin(playerHandle.rotation);
         if (playerHandle.rotation === 0) {
             playerHandle.y_tip = playerHandle.y - 48;
