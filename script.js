@@ -18,16 +18,14 @@ window.onload = function () {
     var context = canvas.getContext('2d');
     var width = canvas.width = window.innerWidth - 20;
     var height = canvas.height = window.innerHeight - 20;
-    var recPath;
     var radius = 30;
     var wallSpeed = 1.5;
     var dead = false;
     var ticksSinceLastObstacle = 0;
-    var maxWallHandles = 10
-    var nextWallHandleIndex = 0;
     var activeWalls = [];
     var gapWidth = 120;
     var wallHeight = 30;
+    var timeSinceLastObstacle = 0;
 
     //var boolean = false;
     var timer = 0;
@@ -87,6 +85,7 @@ window.onload = function () {
             }
         }
         //drawWall(0, obst4(width), obst4_destructable(width));
+        //if(timeSinceLastObstacle >= 1500){
         if(ticksSinceLastObstacle > 500){
             console.log("---- NEW OBSTACLE ----");
             var random_obstacle = getRandomIntInclusive(0,4);
@@ -99,54 +98,44 @@ window.onload = function () {
             }
             switch (random_obstacle) {
                 case 0:
-                    //handleWallHandleIndex();
                     activeWalls.push({path: obst0(width)
                         , path_destructable: obst0_destructable(width)
                         , color: color
                         , l_border: 0
                         , r_border: gapWidth
                         , destroyed: false});
-                    //drawWall(color, obst0(width), obst0_destructable(width));
                     break;
                 case 1:
-                    //handleWallHandleIndex();
                     activeWalls.push({path: obst1(width)
                         , path_destructable: obst1_destructable(width)
                         , color: color
                         , l_border: 1/6 * width
                         , r_border: 1/6 * width + gapWidth
                         , destroyed: false});
-                    //drawWall(color, obst1(width), obst1_destructable(width));
                     break;
                 case 2:
-                    //handleWallHandleIndex();
                     activeWalls.push({path: obst2(width)
                         , path_destructable: obst2_destructable(width)
                         , color: color
                         , l_border: 2/6 * width
                         , r_border: 2/6 * width + gapWidth
                         , destroyed: false});
-                    //drawWall(color, obst2(width), obst2_destructable(width));
                     break;
                 case 3:
-                    //handleWallHandleIndex();
                     activeWalls.push({path: obst3(width)
                         , path_destructable: obst3_destructable(width)
                         , color: color
                         , l_border: 3/6 * width
                         , r_border: 3/6 * width + gapWidth
                         , destroyed: false});
-                    //drawWall(color, obst3(width), obst3_destructable(width));
                     break;
                 case 4:
-                    //handleWallHandleIndex();
                     activeWalls.push({path: obst4(width)
                         , path_destructable: obst4_destructable(width)
                         , color: color
                         , l_border: 4/6 * width
                         , r_border: 4/6 * width + gapWidth
                         , destroyed: false});
-                    //drawWall(color, obst4(width), obst4_destructable(width));
                     break;
                 default:
                     break;
@@ -155,13 +144,12 @@ window.onload = function () {
             ticksSinceLastObstacle = 0;
         }
         //Safe currently active walls in array!!!!
-        nextWallHandleIndex = 0;
         for(let i = 0; i < activeWalls.length; i++){
             drawWall(activeWalls[i].color, activeWalls[i].path, activeWalls[i].path_destructable, i);
         }
 
         if(isInsideWall(playerHandle.x, playerHandle.y)){
-            if(timer > 20) {
+            if(timer > 20) {        //player is inside wall for roughly 20 ticks
             //console.log("---- PLAYER INSIDE WALL ----");
             //console.dir(wallHandles)
             timer = 0;
