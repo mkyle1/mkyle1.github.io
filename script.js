@@ -27,6 +27,7 @@ window.onload = function () {
     var nextWallHandleIndex = 0;
     var activeWalls = [];
     var gapWidth = 120;
+    var wallHeight = 30;
 
     //var boolean = false;
     var timer = 0;
@@ -43,11 +44,16 @@ window.onload = function () {
     };
     var reflectionHandle = {
         x_r1: 0,
-        y_r1: 0,
+        y_r1: 0,    //height of first reflection point
+        incline_l1: 0,
         x_r2: 0,
-        y_r2: 0,
+        y_r2: 0,    //height of second reflection point
+        incline_l2: 0,
+        color_r1: "blue",
         x_r3: 0,
-        y_r3: 0,
+        y_r3: 0,    //height of third reflection point
+        incline_l3: 0,
+        color_r2: "blue",
     };
     var wallHandles = [];
     //wallHandles.push({x: 0, y: 0});
@@ -84,7 +90,13 @@ window.onload = function () {
         if(ticksSinceLastObstacle > 500){
             console.log("---- NEW OBSTACLE ----");
             var random_obstacle = getRandomIntInclusive(0,4);
-            var color = getRandomIntInclusive(0, 1);
+            var colorInt = getRandomIntInclusive(0, 1);
+            var color;
+            if(colorInt === 0){
+                color = "red";
+            } else if (colorInt === 1) {
+                color = "green";
+            }
             switch (random_obstacle) {
                 case 0:
                     //handleWallHandleIndex();
@@ -150,8 +162,8 @@ window.onload = function () {
 
         if(isInsideWall(playerHandle.x, playerHandle.y)){
             if(timer > 20) {
-            console.log("---- PLAYER INSIDE WALL ----");
-            console.dir(wallHandles)
+            //console.log("---- PLAYER INSIDE WALL ----");
+            //console.dir(wallHandles)
             timer = 0;
             }
             timer++;
@@ -178,16 +190,87 @@ window.onload = function () {
             moveWall(i);
         }
 
+        checkLaserCollision();
+
         //if collided
         if(!dead) {
             requestAnimationFrame(draw);
         }
     }draw();
 
+    function checkLaserCollision(){
+        if(wallHandles[0].y < reflectionHandle.y_r1) {      //is first reflection point below the lowest wall?
+            if(wallHandles[0].y < reflectionHandle.y_r2) {    //is the second reflection point below the lowest wall? -> 2nd reflected laser hits wall
+                if(activeWalls.length != 0) {
+                    if(activeWalls[0].color == reflectionHandle.color_r2) {     //does the wall have the same color as the reflected laser?
+                        console.log("Checking inside");
+                        let x = activeWalls[0].l_border;
+                        //let y = reflectionHandle.y_r1 + (x - reflectionHandle.x_r1) * reflectionHandle.incline_l1;
+                        if(reflectionHandle.incline_l2 > 0) {
+                            //let y = wallHandles[0].y + wallHeight;
+                            let y = reflectionHandle.y_r2 + (reflectionHandle.x_r2 - x) * reflectionHandle.incline_l2;
+                            for(let i = 0; i < gapWidth; i++){  //for each x value of the destructable wall part
+                                y = y - reflectionHandle.incline_l2;
+                                //drawPathFunc(context, laser_path(), 1, x, y, "blue");
+                                if(isInsideDestructable(x, y, 0)) {
+                                    activeWalls[0].destroyed = true;
+                                }
+                                x++;
+                            }
+                        } else {
+                            //let y = wallHandles[0].y;
+                            let y = reflectionHandle.y_r2 + (reflectionHandle.x_r2 - x) * reflectionHandle.incline_l2;
+                            for(let i = 0; i < gapWidth; i++){  //for each x value of the destructable wall part
+                                y = y - reflectionHandle.incline_l2;
+                                //drawPathFunc(context, laser_path(), 1, x, y, "blue");
+                                if(isInsideDestructable(x, y, 0)) {
+                                    activeWalls[0].destroyed = true;
+                                }
+                                x++;
+                            }
+                        }
+                    }
+                }
+            } else {    //1st reflected laser hits wall
+                if(activeWalls.length != 0) {
+                    if(activeWalls[0].color == reflectionHandle.color_r1) {     //does the wall have the same color as the reflected laser?
+                        console.log("Checking inside");
+                        let x = activeWalls[0].l_border;
+                        //let y = reflectionHandle.y_r1 + (x - reflectionHandle.x_r1) * reflectionHandle.incline_l1;
+                        if(reflectionHandle.incline_l1 > 0) {
+                            //let y = wallHandles[0].y + wallHeight;
+                            let y = reflectionHandle.y_r1 + (reflectionHandle.x_r1 - x) * reflectionHandle.incline_l1;
+                            for(let i = 0; i < gapWidth; i++){  //for each x value of the destructable wall part
+                                y = y - reflectionHandle.incline_l1;
+                                //drawPathFunc(context, laser_path(), 1, x, y, "blue");
+                                if(isInsideDestructable(x, y, 0)) {
+                                    activeWalls[0].destroyed = true;
+                                }
+                                x++;
+                            }
+                        } else {
+                            //let y = wallHandles[0].y;
+                            let y = reflectionHandle.y_r1 + (reflectionHandle.x_r1 - x) * reflectionHandle.incline_l1;
+                            for(let i = 0; i < gapWidth; i++){  //for each x value of the destructable wall part
+                                y = y - reflectionHandle.incline_l1;
+                                //drawPathFunc(context, laser_path(), 1, x, y, "blue");
+                                if(isInsideDestructable(x, y, 0)) {
+                                    activeWalls[0].destroyed = true;
+                                }
+                                x++;
+                            }
+                        }
+                    }
+                }
+            }
+            }
+        }
+    
+
     function drawWall(color, path, path_destructable, index) {
         drawPathFunc(context, path, 1, 0, wallHandles[index].y, 0, "orange");
         if(activeWalls[index].destroyed == false){
-            if(color == 0){     //0 = red
+            if(color == "red"){
                 drawPathFunc(context, path_destructable, 1, 0, wallHandles[index].y, 0, "red");
             } else {
                 drawPathFunc(context, path_destructable, 1, 0, wallHandles[index].y, 0, "green");
@@ -195,11 +278,9 @@ window.onload = function () {
         }
     }
 
-    function moveWall(wallIndex) {
+    function moveWall(wallIndex) {  //moves the wall using the wall handles, deletes the wall when it reaches the end
         wallHandles[wallIndex].y += wallSpeed;
-        if(wallHandles[wallIndex].y > playerHandle.y){
-            /* wallHandles.splice(wallIndex, 1);
-            wallHandles.splice(wallIndex, 0, {x: 0, y: 0}); */
+        if(wallHandles[wallIndex].y > height){
             activeWalls.shift();
             wallHandles.shift();
             console.log("---- Lowest Wall Removed ----");
@@ -208,13 +289,14 @@ window.onload = function () {
 
     function drawLaser() {
         let incline = (playerHandle.y_tip - playerHandle.y) / (playerHandle.x_tip - playerHandle.x);
+        reflectionHandle.incline_l1 = incline;
         let y_stop;
             //get reflection point
-            if (incline > 0 && playerHandle.y_tip < playerHandle.y) {
+            if (incline > 0 && playerHandle.y_tip < playerHandle.y) {   //Laser inclines to the left
                 y_stop = playerHandle.x * -incline + playerHandle.y;
                 reflectionHandle.x_r1 = 0;
                 reflectionHandle.y_r1 = y_stop;
-            } else if (incline < 0 && playerHandle.y_tip < playerHandle.y) {
+            } else if (incline < 0 && playerHandle.y_tip < playerHandle.y) {    //Laser inclines to the right
                 y_stop = (width - playerHandle.x) * incline + playerHandle.y;
                 reflectionHandle.x_r1 = width;
                 reflectionHandle.y_r1 = y_stop;
@@ -238,11 +320,12 @@ window.onload = function () {
         let y_stop;
         //get reflection point
         incline = -incline;
-            if (incline > 0 && playerHandle.y_tip < playerHandle.y) {
+        reflectionHandle.incline_l2 = incline;
+            if (incline > 0 && playerHandle.y_tip < playerHandle.y) {   //Laser inclines to the left
                 y_stop = reflectionHandle.x_r1 * -incline + reflectionHandle.y_r1;
                 reflectionHandle.x_r2 = 0;
                 reflectionHandle.y_r2 = y_stop;
-            } else if (incline < 0 && playerHandle.y_tip < playerHandle.y) {
+            } else if (incline < 0 && playerHandle.y_tip < playerHandle.y) {    //Laser inclines to the right
                 y_stop = (width - reflectionHandle.x_r1) * incline + reflectionHandle.y_r1;
                 reflectionHandle.x_r2 = width;
                 reflectionHandle.y_r2 = y_stop;
@@ -252,8 +335,10 @@ window.onload = function () {
         context.lineWidth = 3;
         context.moveTo(reflectionHandle.x_r1, reflectionHandle.y_r1);
         if(reflectionHandle.x_r1 != 0) {
+            reflectionHandle.color_r1 = "green";
             context.strokeStyle = "green";
         } else {
+            reflectionHandle.color_r1 = "red";
             context.strokeStyle = "red";
         }
         if (incline > 0) {
@@ -267,6 +352,7 @@ window.onload = function () {
     function drawReflection2() {
         let incline = (playerHandle.y_tip - playerHandle.y) / (playerHandle.x_tip - playerHandle.x);
         let y_stop;
+        reflectionHandle.incline_l3 = incline;
         //get reflection point
             if (incline > 0 && playerHandle.y_tip < playerHandle.y) {
                 y_stop = reflectionHandle.x_r2 * -incline + reflectionHandle.y_r2;
@@ -282,8 +368,10 @@ window.onload = function () {
         context.lineWidth = 3;
         context.moveTo(reflectionHandle.x_r2, reflectionHandle.y_r2);
         if(reflectionHandle.x_r2 != 0) {
+            reflectionHandle.color_r2 = "green";
             context.strokeStyle = "green";
         } else {
+            reflectionHandle.color_r2 = "red";
             context.strokeStyle = "red";
         }
         if (incline > 0) {
@@ -317,10 +405,18 @@ window.onload = function () {
         return inside;
     }
 
-    function isInsideWall(){
-        if(playerHandle.y <= wallHandles[0].y + 30 && playerHandle.y >= wallHandles[0].y){
+    function isInsideDestructable(x, y, index) {
+        if(x > activeWalls[index].l_border && x < activeWalls[index].r_border && y > wallHandles[index].y && y < wallHandles[index].y + wallHeight) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    function isInsideWall(x, y){
+        if(y <= wallHandles[0].y + 30 && y >= wallHandles[0].y){
             if(activeWalls[0].destroyed == true) {
-                if(playerHandle.x >= activeWalls[0].l_border && playerHandle.x <= activeWalls[0].r_border){
+                if(x >= activeWalls[0].l_border && x <= activeWalls[0].r_border){
                     return false;
                 } else {
                     //dead = true;
@@ -332,27 +428,6 @@ window.onload = function () {
             }
         } else {
             return false;
-        }
-    }
-
-    function isInsidePath(ix, iy) {
-        for(let i in obstaclePaths) {
-            if (context.isPointInPath(obstaclePaths[i], ix, iy)) {
-                console.log("---- IS INSIDE ----");
-                return true;
-            } else {
-                console.log("---- IS NOT INSIDE ----");
-                return false;
-            }
-        }
-        for(let i in destructableObstaclePaths) {
-            if (context.isPointInPath(destructableObstaclePaths[i], ix, iy)) {
-                console.log("---- IS INSIDE ----");
-                return true;
-            } else {
-                console.log("---- IS NOT INSIDE ----");
-                return false;
-            }
         }
     }
 
