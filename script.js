@@ -198,7 +198,7 @@ window.onload = function () {
         }
     }draw();
 
-    function checkLaserCollision(){
+    function checkLaserCollision(){ //check if laser collides with destructable wall part
         if(wallHandles[0].y < reflectionHandle.y_r1) {      //is first reflection point below the lowest wall?
             if(wallHandles[0].y < reflectionHandle.y_r2) {    //is the second reflection point below the lowest wall? -> 2nd reflected laser hits wall
                 if(activeWalls.length != 0) {
