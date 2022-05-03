@@ -420,12 +420,13 @@ window.onload = function () {
     }
 
     document.body.addEventListener("touchstart", function (event) {
+        event.preventDefault();
         if (event.touches.length === 1 && isInside(event.touches[0].pageX, event.touches[0].pageY)) {
                 document.body.addEventListener("touchmove", onTouchMove);
                 document.body.addEventListener("touchend", onTouchEnd);
                 //console.log("Touch is inside");
         } else if (event.touches.length === 2) {
-            event.preventDefault();
+            //event.preventDefault();
             document.body.addEventListener("touchmove", onTouchRotate);
             document.body.addEventListener("touchend", onTouchEnd);
         } else if (event.touches.length === 3) {
