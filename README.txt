@@ -2,6 +2,8 @@
 
 Link zum gehosteten Spiel: https://mkyle1.github.io
 
+--- Sound funktioniert nicht auf iOS Geräten! ---
+
 Der Spieler kontrolliert einen Laser.
 Der Laser lässt sich mit 2 Fingern drehen und mit 2 oder 1 Finger nach links und rechts bewegen.
 Der Laser lässt sich an den Wänden 2 mal reflektieren.
