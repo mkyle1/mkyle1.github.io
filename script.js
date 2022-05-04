@@ -1,4 +1,4 @@
-import {player_path, obst_path, broken_obst_path, obst0, obst0_destructable, obst1, obst1_destructable, obst2, obst2_destructable, obst3, obst3_destructable, obst4, obst4_destructable} from './object_paths.js';
+import {player_path, obst0, obst0_destructable, obst1, obst1_destructable, obst2, obst2_destructable, obst3, obst3_destructable, obst4, obst4_destructable, circle_path} from './object_paths.js';
 
 function distance(x1,y1,x2,y2){
     let dx = x1 - x2;
@@ -33,14 +33,13 @@ window.onload = function () {
     var explosionSound = new Audio('./music/explosion.wav');
     explosionSound.volume = 0.2;
     explosionSound.muted = false;
-    var timeOfLastExplosion = Date.now();
     var liveLostSound = new Audio('./music/liveLost.wav');
     liveLostSound.volume = 0.2;
     liveLostSound.muted = false;
     var deathSound = new Audio('./music/death.wav');
     deathSound.volume = 0.2;
     deathSound.muted = false;
-    var timeOfLastPrint = Date.now();
+    //var timeOfLastPrint = Date.now();
     var timeOfLastWallSpeedChange = Date.now();
 
     var timer = 0;
@@ -69,7 +68,7 @@ window.onload = function () {
         color_r2: "blue",
     };
     var wallHandles = [];
-    //wallHandles.push({x: 0, y: 0});
+
     var canvasHandle = {
         x_left: 0,
         x_right: width,
@@ -83,8 +82,7 @@ window.onload = function () {
         if(dead == false) {
         context.clearRect(0, 0, width, height);
         drawPathFunc(context, player_path(playerRadius), 1, playerHandle.x, playerHandle.y, playerHandle.rotation , "blue");
-        drawPathFunc(context, laser_path(), 1, playerHandle.x_tip, playerHandle.y_tip, playerHandle.rotation, "red");
-        drawPathFunc(context, laser_path(), 1, reflectionHandle.x_r1, reflectionHandle.y_r1, playerHandle.rotation, "yellow");
+        drawPathFunc(context, circle_path(), 1, playerHandle.x_tip, playerHandle.y_tip, playerHandle.rotation, "red");
 
         //get the needed amount of wall handles
         if (wallHandles.length <= activeWalls.length) {
@@ -156,7 +154,7 @@ window.onload = function () {
         context.fillText("Game Over", width / 2 - 80, height / 2 - 100);
         context.font = "17px Arial";
         context.fillText("Press the button to play again!", width / 2 - 120, height / 2 - 50);
-        drawPathFunc(context, laser_path(), 5, width/2, height/2, 0, "black");
+        drawPathFunc(context, circle_path(), 5, width/2, height/2, 0, "black");
         requestAnimationFrame(draw);
     }
     }draw();
@@ -436,18 +434,12 @@ window.onload = function () {
         context.stroke();
     };
 
-    function laser_path() {   //path for dot for testing
-        let path = new Path2D();
-        path.arc(0, 0, 5, 0, Math.PI * 2, true);
-        return path;
-    }
-
     function drawPathFunc(ctx, path, scale, x, y, angle, color) {
             ctx.fillStyle = color;
             ctx.translate(x, y);
             ctx.rotate(angle);
             ctx.scale(scale, scale);
-            let m = ctx.getTransform();  // movingMatrix == T
+            let m = ctx.getTransform();
             ctx.fill(path);
             ctx.resetTransform();
             return m;
@@ -487,7 +479,6 @@ window.onload = function () {
 
     document.body.addEventListener("touchstart", function (event) {
         event.preventDefault();
-        //if (event.touches.length === 1 && isInside(playerHandle.x, playerHandle.y, event.touches[0].pageX, event.touches[0].pageY, playerRadius)) {
         if(dead == false) {
             if (event.touches.length === 1) {
                     document.body.addEventListener("touchmove", onTouchMove);
@@ -523,7 +514,6 @@ window.onload = function () {
     function onTouchMove(event) {
         playerHandle.x = event.touches[0].clientX;
         updateRotation();
-
     }
 
     function updateRotation() {     //tracks the tip of the player when rotated

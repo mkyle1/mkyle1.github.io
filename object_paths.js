@@ -204,3 +204,9 @@ export function player_path(radius) {    //path for player figure
     path.closePath();
     return path;
 }
+
+export function circle_path() {   //path for dot for testing
+    let path = new Path2D();
+    path.arc(0, 0, 5, 0, Math.PI * 2, true);
+    return path;
+}
