@@ -184,6 +184,8 @@ window.onload = function () {
                         , l_border: 0
                         , r_border: gapWidth
                         , destroyed: false});
+                    wallHandles[activeWalls.length - 1].x = 0;
+                    wallHandles[activeWalls.length - 1].y = 0;
                     break;
                 case 1:
                     activeWalls.push({path: obst1(width)
@@ -192,6 +194,8 @@ window.onload = function () {
                         , l_border: 1/6 * width
                         , r_border: 1/6 * width + gapWidth
                         , destroyed: false});
+                    wallHandles[activeWalls.length - 1].x = 0;
+                    wallHandles[activeWalls.length - 1].y = 0;
                     break;
                 case 2:
                     activeWalls.push({path: obst2(width)
@@ -200,6 +204,8 @@ window.onload = function () {
                         , l_border: 2/6 * width
                         , r_border: 2/6 * width + gapWidth
                         , destroyed: false});
+                    wallHandles[activeWalls.length - 1].x = 0;
+                    wallHandles[activeWalls.length - 1].y = 0;
                     break;
                 case 3:
                     activeWalls.push({path: obst3(width)
@@ -208,6 +214,8 @@ window.onload = function () {
                         , l_border: 3/6 * width
                         , r_border: 3/6 * width + gapWidth
                         , destroyed: false});
+                    wallHandles[activeWalls.length - 1].x = 0;
+                    wallHandles[activeWalls.length - 1].y = 0;
                     break;
                 case 4:
                     activeWalls.push({path: obst4(width)
@@ -216,6 +224,8 @@ window.onload = function () {
                         , l_border: 4/6 * width
                         , r_border: 4/6 * width + gapWidth
                         , destroyed: false});
+                    wallHandles[activeWalls.length - 1].x = 0;
+                    wallHandles[activeWalls.length - 1].y = 0;
                     break;
                 default:
                     break;
@@ -226,12 +236,14 @@ window.onload = function () {
 
     function updateScore() {
         var score = ((Date.now() - startTime) / 1000).toFixed(1);
-        document.getElementById("score").innerText = "Time Alive: " + score + "_____" + "Lives Left: " + lives;
+        document.getElementById("score").innerText = "Time Alive: " + score + " Lives Left: " + lives;
         if(lives <= 0){
             dead = true;
             deathSound.play();
-            for(let i = 0; i <= activeWalls.length; i++){
+            while(activeWalls.length > 0){
                 activeWalls.shift();
+            }
+            for(let i = 0; i <= activeWalls.length; i++){
                 wallHandles[i].x = 0;
                 wallHandles[i].y = 0;
             }
@@ -495,7 +507,7 @@ window.onload = function () {
                 console.log("Restart pressed");
                 startTime = Date.now();
                 timeOfLastObstacle = Date.now();
-                wallSpeed = window.innerWidth / 800;
+                wallSpeed = window.innerHeight / 800;
                 console.log("Wall Speed: " + wallSpeed);
                 requestAnimationFrame(draw);
             }
