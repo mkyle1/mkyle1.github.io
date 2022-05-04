@@ -22,7 +22,6 @@ export function obst0(width) {
     path.lineTo(gapWidth, 30);
     path.lineTo(gapWidth, 0);
     path.closePath();
-    path.closePath();
     
     return path;
 }
@@ -37,6 +36,7 @@ export function obst0_destructable(width) {
     path.lineTo(10, 35);
     path.lineTo(0, 30);
     path.lineTo(0, 0);
+    path.closePath();
     return path;
 }
 
@@ -57,7 +57,6 @@ export function obst1(width) {
     path.lineTo(1/6 * width + gapWidth, 30);
     path.lineTo(1/6 * width + gapWidth, 0);
     path.closePath();
-    path.closePath();
     return path;
 }
 export function obst1_destructable(width) {
@@ -71,6 +70,7 @@ export function obst1_destructable(width) {
     path.lineTo(1/6 * width + 10, 35);
     path.lineTo(1/6 * width, 30);
     path.lineTo(1/6 * width, 0);
+    path.closePath();
     return path;
 }
 
@@ -91,7 +91,6 @@ export function obst2(width) {
     path.lineTo(2/6 * width + gapWidth, 30);
     path.lineTo(2/6 * width + gapWidth, 0);
     path.closePath();
-    path.closePath();
     return path;
 }
 export function obst2_destructable(width) {
@@ -105,6 +104,7 @@ export function obst2_destructable(width) {
     path.lineTo(2/6 * width + 10, 35);
     path.lineTo(2/6 * width, 30);
     path.lineTo(2/6 * width, 0);
+    path.closePath();
     return path;
 }
 
@@ -125,7 +125,6 @@ export function obst3(width) {
     path.lineTo(3/6 * width + gapWidth, 30);
     path.lineTo(3/6 * width + gapWidth, 0);
     path.closePath();
-    path.closePath();
     return path;
 }
 export function obst3_destructable(width) {
@@ -139,6 +138,7 @@ export function obst3_destructable(width) {
     path.lineTo(3/6 * width + 10, 35);
     path.lineTo(3/6 * width, 30);
     path.lineTo(3/6 * width, 0);
+    path.closePath();
     return path;
 }
 
@@ -159,7 +159,6 @@ export function obst4(width) {
     path.lineTo(4/6 * width + gapWidth, 30);
     path.lineTo(4/6 * width + gapWidth, 0);
     path.closePath();
-    path.closePath();
     return path;
 }
 export function obst4_destructable(width) {
@@ -173,6 +172,34 @@ export function obst4_destructable(width) {
     path.lineTo(4/6 * width + 10, 35);
     path.lineTo(4/6 * width, 30);
     path.lineTo(4/6 * width, 0);
+    path.closePath();
+    return path;
+}
+
+export function obst5(width) {
+    let path = new Path2D();
+    //linker Teil
+    path.moveTo(0,0);
+    path.lineTo(width - gapWidth, 0);
+    path.lineTo(width - gapWidth, 30);
+    path.lineTo(0,30);
+    path.lineTo(0,0);
+
+    path.closePath();
+    return path;
+}
+export function obst5_destructable(width) {
+    let path = new Path2D();
+    path.moveTo(width - gapWidth, 0);
+    path.lineTo(width - gapWidth + 10, -5);
+    path.lineTo(width - 10, -5);
+    path.lineTo(width, 0);
+    path.lineTo(width, 30);
+    path.lineTo(width - 10, 35);
+    path.lineTo(width - gapWidth + 10, 35);
+    path.lineTo(width - gapWidth, 30);
+    path.lineTo(width - gapWidth, 0);
+    path.closePath();
     return path;
 }
 

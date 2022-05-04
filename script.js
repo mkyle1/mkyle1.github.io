@@ -1,4 +1,4 @@
-import {player_path, obst0, obst0_destructable, obst1, obst1_destructable, obst2, obst2_destructable, obst3, obst3_destructable, obst4, obst4_destructable, circle_path} from './object_paths.js';
+import {player_path, obst0, obst0_destructable, obst1, obst1_destructable, obst2, obst2_destructable, obst3, obst3_destructable, obst4, obst4_destructable, obst5, obst5_destructable, circle_path} from './object_paths.js';
 
 function distance(x1,y1,x2,y2){
     let dx = x1 - x2;
@@ -20,6 +20,7 @@ window.onload = function () {
     var height = canvas.height = window.innerHeight - 40;
     var playerRadius = 30;
     var wallSpeed = window.innerHeight / 600;
+    var wallSpeedInc = wallSpeed / 3;
     var first = true;
     var dead = false;
     var activeWalls = [];
@@ -28,7 +29,7 @@ window.onload = function () {
     var timeOfLastObstacle = Date.now();
     var startTime = Date.now();
     var timeOfLastStep = Date.now();
-    var lives = 2;
+    var lifes = 2;
     var timeLiveLost = Date.now();
     var explosionSound = new Audio('./music/explosion.wav');
     explosionSound.volume = 0.2;
@@ -41,6 +42,7 @@ window.onload = function () {
     deathSound.muted = false;
     //var timeOfLastPrint = Date.now();
     var timeOfLastWallSpeedChange = Date.now();
+    var obstacleTimer = 4500;       //time between obstacles in ms
 
     var playerHandle = {
         x: width / 2,
@@ -64,7 +66,7 @@ window.onload = function () {
     };
     var wallHandles = [];
 
-    alert("Wilkommen bei meinem Spiel! \n \n Die Wände reflektieren deinen Laser in verschiedenen Farben. \n Drehe den Laser mit 2 Fingern. \n Bewege den Laser mit 2 oder 1 Finger. \n Rote Hindernisse werden durch rote Reflektion zerstört. \n Grüne Hindernisse werden durch grüne Reflektion zerstört.");
+    alert("Wilkommen bei meinem Spiel! \n\n Die Wände reflektieren deinen Laser in verschiedenen Farben. \n Drehe den Laserpointer mit zwei Fingern. \n Bewege den Laser mit zwei oder einem Finger. \n Rote Hindernisse werden durch rote Reflektion zerstört. \n Grüne Hindernisse werden durch grüne Reflektion zerstört.");
 
     function draw() {
         if(dead == false) {
@@ -91,7 +93,7 @@ window.onload = function () {
         if(isInsideWall(playerHandle.x, playerHandle.y)){
             if(currentTime - timeLiveLost > 500) {
                 liveLostSound.play();
-                lives = lives - 1;
+                lifes = lifes - 1;
                 timeLiveLost = currentTime;
             }
         }
@@ -114,19 +116,27 @@ window.onload = function () {
             timeOfLastStep = currentTime;
         }
 
-       /*  currentTime = Date.now();
+        /* currentTime = Date.now();
         if(currentTime - timeOfLastPrint > 5000) {
-            console.dir(activeWalls);
-            console.dir(wallHandles);
+            console.dir(record);
             timeOfLastPrint = currentTime;
         } */
 
-        //increasing wall speed every 10 seconds
+        //increasing obstacle speed and spawn rate every 10 seconds
         currentTime = Date.now();
         if((currentTime - timeOfLastWallSpeedChange) >= 10000 && (currentTime - startTime) >= 9000){
             timeOfLastWallSpeedChange = currentTime;
-            wallSpeed = wallSpeed + 0.5;
-            console.log("wallSpeed: " + wallSpeed);
+            wallSpeed = wallSpeed + wallSpeedInc;
+            //decrease obstacle spawn rate in varying stages
+            if(obstacleTimer > 1700) {
+                obstacleTimer = obstacleTimer - 700;
+            } else {
+                if(obstacleTimer > 1000) {
+                    obstacleTimer = obstacleTimer - 100;
+                } else {
+                    obstacleTimer = 1000;
+                }
+            }
         }
 
         checkLaserCollision();
@@ -135,25 +145,26 @@ window.onload = function () {
 
     } else {
         context.clearRect(0, 0, width, height);
-        lives = 5;
+        lifes = 5;
+        obstacleTimer = 4500;
         
         //creating an end screen
+        context.fillStyle = "black";
         context.font = "30px Arial";
         context.fillText("Game Over", width / 2 - 80, height / 2 - 100);
         context.font = "17px Arial";
-        context.fillText("Press the button to play again!", width / 2 - 120, height / 2 - 50);
-        drawPathFunc(context, circle_path(), 5, width/2, height/2, 0, "black");
+        context.fillText("Press the button to play again!", width / 2 - 110, height / 2 -50);
+        drawPathFunc(context, circle_path(), 6, width/2, height/2, 0, "grey");
         requestAnimationFrame(draw);
     }
     }draw();
 
     function createObstacle() {
         var currentTime = Date.now();
-        if(currentTime - timeOfLastObstacle > 4500 || first){
+        if(currentTime - timeOfLastObstacle > obstacleTimer || first){
             first = false;
             timeOfLastObstacle = currentTime;
-            console.log("---- NEW OBSTACLE ----");
-            var random_obstacle = getRandomIntInclusive(0,4);
+            var random_obstacle = getRandomIntInclusive(0,5);
             var colorInt = getRandomIntInclusive(0, 1);
             var color;
             if(colorInt === 0){
@@ -212,6 +223,16 @@ window.onload = function () {
                     wallHandles[activeWalls.length - 1].x = 0;
                     wallHandles[activeWalls.length - 1].y = 0;
                     break;
+                case 5:
+                    activeWalls.push({path: obst5(width)
+                        , path_destructable: obst5_destructable(width)
+                        , color: color
+                        , l_border: width - gapWidth
+                        , r_border: width
+                        , destroyed: false});
+                    wallHandles[activeWalls.length - 1].x = 0;
+                    wallHandles[activeWalls.length - 1].y = 0;
+                    break;
                 default:
                     break;
 
@@ -221,8 +242,8 @@ window.onload = function () {
 
     function updateScore() {
         var score = ((Date.now() - startTime) / 1000).toFixed(1);
-        document.getElementById("score").innerText = "Time Alive: " + score + " Lives Left: " + lives;
-        if(lives <= 0){
+        document.getElementById("score").innerText = "Time Alive: " + score + "s Lifes Left: " + lifes;
+        if(lifes <= 0){
             dead = true;
             deathSound.play();
             while(activeWalls.length > 0){
@@ -236,7 +257,11 @@ window.onload = function () {
     }
 
     function checkLaserCollision(){ //check if laser collides with destructable wall part
-        for(let index = 0; index < activeWalls.length; index++){
+        var helper = activeWalls.length;
+        if(helper >= 2) {
+            helper = 2;
+        }
+        for(let index = 0; index < helper; index++){
             if(wallHandles[index].y < reflectionHandle.y_r1) {      //is first reflection point below the lowest wall?
                 if(wallHandles[index].y < reflectionHandle.y_r2) {    //is the second reflection point below the lowest wall? -> 2nd reflected laser hits wall
                     if(activeWalls.length != 0) {
@@ -272,7 +297,6 @@ window.onload = function () {
                 } else {    //1st reflected laser hits wall
                     if(activeWalls.length != 0) {
                         if(activeWalls[index].color == reflectionHandle.color_r1) {     //does the wall have the same color as the reflected laser?
-                            console.log("Checking inside");
                             let x = activeWalls[index].l_border;
                             if(reflectionHandle.incline_l1 > 0) {
                                 let y = reflectionHandle.y_r1 + (reflectionHandle.x_r1 - x) * reflectionHandle.incline_l1;
@@ -323,7 +347,6 @@ window.onload = function () {
         if(wallHandles[wallIndex].y > height){
             activeWalls.shift();
             wallHandles.shift();
-            console.log("---- Lowest Wall Removed ----");
         }
     }
 
@@ -465,32 +488,33 @@ window.onload = function () {
         }
     }
 
-    document.body.addEventListener("touchstart", function (event) {
+    canvas.addEventListener("touchstart", function (event) {
         event.preventDefault();
         if(dead == false) {
             if (event.touches.length === 1) {
                     document.body.addEventListener("touchmove", onTouchMove);
                     document.body.addEventListener("touchend", onTouchEnd);
             } else if (event.touches.length === 2) {
-                document.body.addEventListener("touchmove", onTouchRotate);
-                document.body.addEventListener("touchend", onTouchEnd);
+                canvas.addEventListener("touchmove", onTouchRotate);
+                canvas.addEventListener("touchend", onTouchEnd);
             }
         } else {
             if(isInside(width/2, height/2, event.touches[0].pageX, event.touches[0].pageY, 50)) {
                 dead = false;
-                console.log("Restart pressed");
                 startTime = Date.now();
                 timeOfLastObstacle = Date.now();
                 wallSpeed = window.innerHeight / 800;
-                console.log("Wall Speed: " + wallSpeed);
                 requestAnimationFrame(draw);
             }
         }
     }, {passive: false});
 
+    var touchBuffer = [];
+
     function onTouchRotate(event) {
         event.preventDefault();
         let touch1 = event.touches[0];
+        touchBuffer.push(touch1);
         let touch2 = event.touches[1];
         let dx = touch1.pageX - touch2.pageX;
         let dy = touch1.pageY - touch2.pageY;
@@ -500,6 +524,9 @@ window.onload = function () {
     }
 
     function onTouchMove(event) {
+        if(touchBuffer.length != 0) {
+            playerHandle.x = touchBuffer[0].pageX;
+        }
         playerHandle.x = event.touches[0].clientX;
         updateRotation();
     }
@@ -514,8 +541,8 @@ window.onload = function () {
     }
 
     function onTouchEnd(event) {
-        document.body.removeEventListener("touchmove", onTouchMove);
-        document.body.removeEventListener("touchend", onTouchEnd);
+        canvas.removeEventListener("touchmove", onTouchMove);
+        canvas.removeEventListener("touchend", onTouchEnd);
     }
 
 }

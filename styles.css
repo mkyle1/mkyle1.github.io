@@ -1,8 +1,8 @@
 #myCanvas {
     border-top: 1px solid black;
     border-bottom: 1px solid black;
-    border-left: 3px solid red;
-    border-right: 3px solid green;
+    border-left: 5px solid red;
+    border-right: 5px solid green;
     position: absolute;
     top: 51%;
     left: 50%;
