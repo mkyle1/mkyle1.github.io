@@ -42,11 +42,6 @@ window.onload = function () {
     //var timeOfLastPrint = Date.now();
     var timeOfLastWallSpeedChange = Date.now();
 
-    var timer = 0;
-
-    var obstaclePaths = [obst0(width), obst1(width), obst2(width), obst3(width), obst4(width)];
-    var destructableObstaclePaths = [obst0_destructable(width), obst1_destructable(width), obst2_destructable(width), obst3_destructable(width), obst4_destructable(width)];
-
     var playerHandle = {
         x: width / 2,
         y: height - 2 * playerRadius,
@@ -68,13 +63,6 @@ window.onload = function () {
         color_r2: "blue",
     };
     var wallHandles = [];
-
-    var canvasHandle = {
-        x_left: 0,
-        x_right: width,
-        y_top: 0,
-        y_bottom: height,
-    };
 
     alert("Wilkommen bei meinem Spiel! \n \n Die Wände reflektieren deinen Laser in verschiedenen Farben. \n Drehe den Laser mit 2 Fingern. \n Bewege den Laser mit 2 oder 1 Finger. \n Rote Hindernisse werden durch rote Reflektion zerstört. \n Grüne Hindernisse werden durch grüne Reflektion zerstört.");
 
