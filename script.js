@@ -29,7 +29,7 @@ window.onload = function () {
     var timeOfLastObstacle = Date.now();
     var startTime = Date.now();
     var timeOfLastStep = Date.now();
-    var lifes = 2;
+    var lifes = 5;
     var timeLiveLost = Date.now();
     var explosionSound = new Audio('./music/explosion.wav');
     explosionSound.volume = 0.2;
@@ -181,7 +181,7 @@ window.onload = function () {
                         , r_border: gapWidth
                         , destroyed: false});
                     wallHandles[activeWalls.length - 1].x = 0;
-                    wallHandles[activeWalls.length - 1].y = 0;
+                    wallHandles[activeWalls.length - 1].y = -30;
                     break;
                 case 1:
                     activeWalls.push({path: obst1(width)
@@ -191,7 +191,7 @@ window.onload = function () {
                         , r_border: 1/6 * width + gapWidth
                         , destroyed: false});
                     wallHandles[activeWalls.length - 1].x = 0;
-                    wallHandles[activeWalls.length - 1].y = 0;
+                    wallHandles[activeWalls.length - 1].y = -30;
                     break;
                 case 2:
                     activeWalls.push({path: obst2(width)
@@ -201,7 +201,7 @@ window.onload = function () {
                         , r_border: 2/6 * width + gapWidth
                         , destroyed: false});
                     wallHandles[activeWalls.length - 1].x = 0;
-                    wallHandles[activeWalls.length - 1].y = 0;
+                    wallHandles[activeWalls.length - 1].y = -30;
                     break;
                 case 3:
                     activeWalls.push({path: obst3(width)
@@ -211,7 +211,7 @@ window.onload = function () {
                         , r_border: 3/6 * width + gapWidth
                         , destroyed: false});
                     wallHandles[activeWalls.length - 1].x = 0;
-                    wallHandles[activeWalls.length - 1].y = 0;
+                    wallHandles[activeWalls.length - 1].y = -30;
                     break;
                 case 4:
                     activeWalls.push({path: obst4(width)
@@ -221,7 +221,7 @@ window.onload = function () {
                         , r_border: 4/6 * width + gapWidth
                         , destroyed: false});
                     wallHandles[activeWalls.length - 1].x = 0;
-                    wallHandles[activeWalls.length - 1].y = 0;
+                    wallHandles[activeWalls.length - 1].y = -30;
                     break;
                 case 5:
                     activeWalls.push({path: obst5(width)
@@ -231,7 +231,7 @@ window.onload = function () {
                         , r_border: width
                         , destroyed: false});
                     wallHandles[activeWalls.length - 1].x = 0;
-                    wallHandles[activeWalls.length - 1].y = 0;
+                    wallHandles[activeWalls.length - 1].y = -30;
                     break;
                 default:
                     break;
@@ -258,8 +258,8 @@ window.onload = function () {
 
     function checkLaserCollision(){ //check if laser collides with destructable wall part
         var helper = activeWalls.length;
-        if(helper >= 2) {
-            helper = 2;
+        if(helper >= 3) {
+            helper = 3;
         }
         for(let index = 0; index < helper; index++){
             if(wallHandles[index].y < reflectionHandle.y_r1) {      //is first reflection point below the lowest wall?
