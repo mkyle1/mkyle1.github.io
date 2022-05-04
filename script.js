@@ -164,7 +164,7 @@ window.onload = function () {
 
     function createObstacle() {
         var currentTime = Date.now();
-        if(currentTime - timeOfLastObstacle > 3500 || first){
+        if(currentTime - timeOfLastObstacle > 4500 || first){
             first = false;
             timeOfLastObstacle = currentTime;
             console.log("---- NEW OBSTACLE ----");
