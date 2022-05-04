@@ -79,8 +79,6 @@ window.onload = function () {
 
     alert("Wilkommen bei meinem Spiel! \n \n Die Wände reflektieren deinen Laser in verschiedenen Farben. \n Drehe den Laser mit 2 Fingern. \n Bewege den Laser mit 2 oder 1 Finger. \n Rote Hindernisse werden durch rote Reflektion zerstört. \n Grüne Hindernisse werden durch grüne Reflektion zerstört.");
 
-    document.getElementById("info").innerHTML = "Width: " + width;
-
     function draw() {
         if(dead == false) {
         context.clearRect(0, 0, width, height);
