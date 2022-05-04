@@ -19,10 +19,9 @@ window.onload = function () {
     var width = canvas.width = window.innerWidth - 20;
     var height = canvas.height = window.innerHeight - 40;
     var playerRadius = 30;
-    var wallSpeed = window.innerHeight / 800;
+    var wallSpeed = window.innerHeight / 600;
     var first = true;
     var dead = false;
-    var ticksSinceLastObstacle = 0;
     var activeWalls = [];
     var gapWidth = 120;
     var wallHeight = 30;
@@ -79,6 +78,8 @@ window.onload = function () {
     };
 
     alert("Wilkommen bei meinem Spiel! \n \n Die Wände reflektieren deinen Laser in verschiedenen Farben. \n Drehe den Laser mit 2 Fingern. \n Bewege den Laser mit 2 oder 1 Finger. \n Rote Hindernisse werden durch rote Reflektion zerstört. \n Grüne Hindernisse werden durch grüne Reflektion zerstört.");
+
+    document.getElementById("info").innerHTML = "Width: " + width;
 
     function draw() {
         if(dead == false) {
@@ -264,7 +265,6 @@ window.onload = function () {
                                     if(isInsideDestructable(x, y, index)) {
                                         if(activeWalls[index].destroyed == false) {
                                             explosionSound.play();
-                                            timeOfLastExplosion = Date.now();
                                         }
                                         activeWalls[index].destroyed = true;
                                     }
@@ -277,7 +277,6 @@ window.onload = function () {
                                     if(isInsideDestructable(x, y, index)) {
                                         if(activeWalls[index].destroyed == false) {
                                             explosionSound.play();
-                                            timeOfLastExplosion = Date.now();
                                         }
                                         activeWalls[index].destroyed = true;
                                     }
@@ -298,7 +297,6 @@ window.onload = function () {
                                     if(isInsideDestructable(x, y, index)) {
                                         if(activeWalls[index].destroyed == false) {
                                             explosionSound.play();
-                                            timeOfLastExplosion = Date.now();
                                         }
                                         activeWalls[index].destroyed = true;
                                     }
@@ -311,7 +309,6 @@ window.onload = function () {
                                     if(isInsideDestructable(x, y, index)) {
                                         if(activeWalls[index].destroyed == false) {
                                             explosionSound.play();
-                                            timeOfLastExplosion = Date.now();
                                         }
                                         activeWalls[index].destroyed = true;
                                     }
