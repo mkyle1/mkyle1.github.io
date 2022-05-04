@@ -17,17 +17,27 @@ window.onload = function () {
     document.body.style.overflow = 'hidden';
     var context = canvas.getContext('2d');
     var width = canvas.width = window.innerWidth - 20;
-    var height = canvas.height = window.innerHeight - 20;
-    var radius = 30;
+    var height = canvas.height = window.innerHeight - 40;
+    var playerRadius = 30;
     var wallSpeed = 1.5;
     var dead = false;
     var ticksSinceLastObstacle = 0;
     var activeWalls = [];
     var gapWidth = 120;
     var wallHeight = 30;
-    var timeSinceLastObstacle = 0;
+    var timeOfLastObstacle = Date.now();
+    var startTime = Date.now();
+    var timeOfLastStep = Date.now();
+    var lives = 2;
+    var timeLiveLost = Date.now();
+    var explosionSound = new Audio('./music/explosion.wav');
+    explosionSound.volume = 0.2;
+    var timeOfLastExplosion = Date.now();
+    var liveLostSound = new Audio('./music/liveLost.wav');
+    liveLostSound.volume = 0.2;
+    var deathSound = new Audio('./music/death.wav');
+    deathSound.volume = 0.2;
 
-    //var boolean = false;
     var timer = 0;
 
     var obstaclePaths = [obst0(width), obst1(width), obst2(width), obst3(width), obst4(width)];
@@ -35,7 +45,7 @@ window.onload = function () {
 
     var playerHandle = {
         x: width / 2,
-        y: height - 2 * radius,
+        y: height - 2 * playerRadius,
         rotation: 1,
         x_tip: 0,
         y_tip: -48,
@@ -63,20 +73,11 @@ window.onload = function () {
     };
 
     function draw() {
+        if(dead == false) {
         context.clearRect(0, 0, width, height);
-        //drawRectangle(playerHandle.x, playerHandle.y);
-        drawPathFunc(context, player_path(radius), 1, playerHandle.x, playerHandle.y, playerHandle.rotation , "blue");
+        drawPathFunc(context, player_path(playerRadius), 1, playerHandle.x, playerHandle.y, playerHandle.rotation , "blue");
         drawPathFunc(context, laser_path(), 1, playerHandle.x_tip, playerHandle.y_tip, playerHandle.rotation, "red");
         drawPathFunc(context, laser_path(), 1, reflectionHandle.x_r1, reflectionHandle.y_r1, playerHandle.rotation, "yellow");
-
-        /* if(boolean == true){
-            drawPathFunc(context, player_path(radius), 1, 300,400, 0 , "purple");
-            if(timer >= 200){
-                boolean = false;
-                timer = 0;
-            }
-            timer++;
-        } */
 
         //get the needed amount of wall handles
         if (wallHandles.length <= activeWalls.length) {
@@ -84,9 +85,10 @@ window.onload = function () {
                 wallHandles.push({x: 0, y: 0});
             }
         }
-        //drawWall(0, obst4(width), obst4_destructable(width));
-        //if(timeSinceLastObstacle >= 1500){
-        if(ticksSinceLastObstacle > 500){
+
+        var currentTime = Date.now();
+        if(currentTime - timeOfLastObstacle > 3500){
+            timeOfLastObstacle = currentTime;
             console.log("---- NEW OBSTACLE ----");
             var random_obstacle = getRandomIntInclusive(0,4);
             var colorInt = getRandomIntInclusive(0, 1);
@@ -141,20 +143,19 @@ window.onload = function () {
                     break;
 
             }
-            ticksSinceLastObstacle = 0;
         }
         //Safe currently active walls in array!!!!
         for(let i = 0; i < activeWalls.length; i++){
             drawWall(activeWalls[i].color, activeWalls[i].path, activeWalls[i].path_destructable, i);
         }
 
+        currentTime = Date.now();
         if(isInsideWall(playerHandle.x, playerHandle.y)){
-            if(timer > 20) {        //player is inside wall for roughly 20 ticks
-            //console.log("---- PLAYER INSIDE WALL ----");
-            //console.dir(wallHandles)
-            timer = 0;
+            if(currentTime - timeLiveLost > 500) {
+                liveLostSound.play();
+                lives = lives - 1;
+                timeLiveLost = currentTime;
             }
-            timer++;
         }
 
 
@@ -174,85 +175,136 @@ window.onload = function () {
         }
 
         //move all walls in the array
-        for(var i = 0; i < activeWalls.length; i++){
-            moveWall(i);
+        currentTime = Date.now();
+        if(currentTime - timeOfLastStep > 5) {      //move all walls every 5 milliseconds, for consistent time scaling accross devices
+            for(var i = 0; i < activeWalls.length; i++){
+                moveWall(i);
+            }
+            timeOfLastStep = currentTime;
+        }
+
+        currentTime = Date.now();
+        if((currentTime - startTime) % 10000 == 0 && (currentTime - startTime) > 0){
+            wallSpeed = wallSpeed + 0.5;
+            console.log("wallSpeed: " + wallSpeed);
         }
 
         checkLaserCollision();
-
-        //if collided
-        if(!dead) {
-            requestAnimationFrame(draw);
+        updateScore();
+        requestAnimationFrame(draw);
+    } else {
+        context.clearRect(0, 0, width, height);
+        for(let i = 0; i < activeWalls.length; i++){
+            activeWalls.shift();
+            wallHandles[i].x = 0;
+            wallHandles[i].y = 0;
         }
+        lives = 5;
+        //console.log("Wall Speed: " + wallSpeed);
+        context.font = "30px Arial";
+        context.fillText("Game Over", width / 2 - 80, height / 2 - 100);
+        context.font = "17px Arial";
+        context.fillText("Press the button to play again!", width / 2 - 120, height / 2 - 50);
+        drawPathFunc(context, laser_path(), 5, width/2, height/2, 0, "black");
+        requestAnimationFrame(draw);
+    }
     }draw();
 
+    function updateScore() {
+        var score = ((Date.now() - startTime) / 1000).toFixed(1);
+        //document.getElementsByClassName("score").innerText = score;
+        document.getElementById("score").innerText = "Time Alive: " + score + "_____" + "Lives Left: " + lives;
+        if(lives <= 0){
+            dead = true;
+            deathSound.play();
+            document.getElementById("score").innerText = "Time Survived: " + score;
+        }
+    }
+
     function checkLaserCollision(){ //check if laser collides with destructable wall part
-        if(wallHandles[0].y < reflectionHandle.y_r1) {      //is first reflection point below the lowest wall?
-            if(wallHandles[0].y < reflectionHandle.y_r2) {    //is the second reflection point below the lowest wall? -> 2nd reflected laser hits wall
-                if(activeWalls.length != 0) {
-                    if(activeWalls[0].color == reflectionHandle.color_r2) {     //does the wall have the same color as the reflected laser?
-                        console.log("Checking inside");
-                        let x = activeWalls[0].l_border;
-                        //let y = reflectionHandle.y_r1 + (x - reflectionHandle.x_r1) * reflectionHandle.incline_l1;
-                        if(reflectionHandle.incline_l2 > 0) {
-                            //let y = wallHandles[0].y + wallHeight;
-                            let y = reflectionHandle.y_r2 + (reflectionHandle.x_r2 - x) * reflectionHandle.incline_l2;
-                            for(let i = 0; i < gapWidth; i++){  //for each x value of the destructable wall part
-                                y = y - reflectionHandle.incline_l2;
-                                //drawPathFunc(context, laser_path(), 1, x, y, "blue");
-                                if(isInsideDestructable(x, y, 0)) {
-                                    activeWalls[0].destroyed = true;
+        for(let index = 0; index < activeWalls.length; index++){
+            if(wallHandles[index].y < reflectionHandle.y_r1) {      //is first reflection point below the lowest wall?
+                if(wallHandles[index].y < reflectionHandle.y_r2) {    //is the second reflection point below the lowest wall? -> 2nd reflected laser hits wall
+                    if(activeWalls.length != 0) {
+                        if(activeWalls[index].color == reflectionHandle.color_r2) {     //does the wall have the same color as the reflected laser?
+                            let x = activeWalls[index].l_border;
+                            //let y = reflectionHandle.y_r1 + (x - reflectionHandle.x_r1) * reflectionHandle.incline_l1;
+                            if(reflectionHandle.incline_l2 > 0) {
+                                //let y = wallHandles[0].y + wallHeight;
+                                let y = reflectionHandle.y_r2 + (reflectionHandle.x_r2 - x) * reflectionHandle.incline_l2;
+                                for(let i = 0; i < gapWidth; i++){  //for each x value of the destructable wall part
+                                    y = y - reflectionHandle.incline_l2;
+                                    //drawPathFunc(context, laser_path(), 1, x, y, "blue");
+                                    if(isInsideDestructable(x, y, index)) {
+                                        activeWalls[index].destroyed = true;
+                                        if(Date.now() - timeOfLastExplosion > 1000) {
+                                            explosionSound.play();
+                                            timeOfLastExplosion = Date.now();
+                                        }
+                                    }
+                                    x++;
                                 }
-                                x++;
+                            } else {
+                                //let y = wallHandles[0].y;
+                                let y = reflectionHandle.y_r2 + (reflectionHandle.x_r2 - x) * reflectionHandle.incline_l2;
+                                for(let i = 0; i < gapWidth; i++){  //for each x value of the destructable wall part
+                                    y = y - reflectionHandle.incline_l2;
+                                    //drawPathFunc(context, laser_path(), 1, x, y, "blue");
+                                    if(isInsideDestructable(x, y, index)) {
+                                        activeWalls[index].destroyed = true;
+                                        if(Date.now() - timeOfLastExplosion > 1000) {
+                                            explosionSound.play();
+                                            timeOfLastExplosion = Date.now();
+                                        }
+                                    }
+                                    x++;
+                                }
                             }
-                        } else {
-                            //let y = wallHandles[0].y;
-                            let y = reflectionHandle.y_r2 + (reflectionHandle.x_r2 - x) * reflectionHandle.incline_l2;
-                            for(let i = 0; i < gapWidth; i++){  //for each x value of the destructable wall part
-                                y = y - reflectionHandle.incline_l2;
-                                //drawPathFunc(context, laser_path(), 1, x, y, "blue");
-                                if(isInsideDestructable(x, y, 0)) {
-                                    activeWalls[0].destroyed = true;
+                        }
+                    }
+                } else {    //1st reflected laser hits wall
+                    if(activeWalls.length != 0) {
+                        if(activeWalls[index].color == reflectionHandle.color_r1) {     //does the wall have the same color as the reflected laser?
+                            console.log("Checking inside");
+                            let x = activeWalls[index].l_border;
+                            //let y = reflectionHandle.y_r1 + (x - reflectionHandle.x_r1) * reflectionHandle.incline_l1;
+                            if(reflectionHandle.incline_l1 > 0) {
+                                //let y = wallHandles[0].y + wallHeight;
+                                let y = reflectionHandle.y_r1 + (reflectionHandle.x_r1 - x) * reflectionHandle.incline_l1;
+                                for(let i = 0; i < gapWidth; i++){  //for each x value of the destructable wall part
+                                    y = y - reflectionHandle.incline_l1;
+                                    //drawPathFunc(context, laser_path(), 1, x, y, "blue");
+                                    if(isInsideDestructable(x, y, index)) {
+                                        activeWalls[index].destroyed = true;
+                                        if(Date.now() - timeOfLastExplosion > 1000) {
+                                            explosionSound.play();
+                                            timeOfLastExplosion = Date.now();
+                                        }
+                                    }
+                                    x++;
                                 }
-                                x++;
+                            } else {
+                                //let y = wallHandles[0].y;
+                                let y = reflectionHandle.y_r1 + (reflectionHandle.x_r1 - x) * reflectionHandle.incline_l1;
+                                for(let i = 0; i < gapWidth; i++){  //for each x value of the destructable wall part
+                                    y = y - reflectionHandle.incline_l1;
+                                    //drawPathFunc(context, laser_path(), 1, x, y, "blue");
+                                    if(isInsideDestructable(x, y, index)) {
+                                        activeWalls[index].destroyed = true;
+                                        if(Date.now() - timeOfLastExplosion > 1000) {
+                                            explosionSound.play();
+                                            timeOfLastExplosion = Date.now();
+                                        }
+                                    }
+                                    x++;
+                                }
                             }
                         }
                     }
                 }
-            } else {    //1st reflected laser hits wall
-                if(activeWalls.length != 0) {
-                    if(activeWalls[0].color == reflectionHandle.color_r1) {     //does the wall have the same color as the reflected laser?
-                        console.log("Checking inside");
-                        let x = activeWalls[0].l_border;
-                        //let y = reflectionHandle.y_r1 + (x - reflectionHandle.x_r1) * reflectionHandle.incline_l1;
-                        if(reflectionHandle.incline_l1 > 0) {
-                            //let y = wallHandles[0].y + wallHeight;
-                            let y = reflectionHandle.y_r1 + (reflectionHandle.x_r1 - x) * reflectionHandle.incline_l1;
-                            for(let i = 0; i < gapWidth; i++){  //for each x value of the destructable wall part
-                                y = y - reflectionHandle.incline_l1;
-                                //drawPathFunc(context, laser_path(), 1, x, y, "blue");
-                                if(isInsideDestructable(x, y, 0)) {
-                                    activeWalls[0].destroyed = true;
-                                }
-                                x++;
-                            }
-                        } else {
-                            //let y = wallHandles[0].y;
-                            let y = reflectionHandle.y_r1 + (reflectionHandle.x_r1 - x) * reflectionHandle.incline_l1;
-                            for(let i = 0; i < gapWidth; i++){  //for each x value of the destructable wall part
-                                y = y - reflectionHandle.incline_l1;
-                                //drawPathFunc(context, laser_path(), 1, x, y, "blue");
-                                if(isInsideDestructable(x, y, 0)) {
-                                    activeWalls[0].destroyed = true;
-                                }
-                                x++;
-                            }
-                        }
-                    }
-                }
-            }
             }
         }
+    }
     
 
     function drawWall(color, path, path_destructable, index) {
@@ -267,7 +319,7 @@ window.onload = function () {
     }
 
     function moveWall(wallIndex) {  //moves the wall using the wall handles, deletes the wall when it reaches the end
-        wallHandles[wallIndex].y += wallSpeed;
+        wallHandles[wallIndex].y = wallHandles[wallIndex].y + wallSpeed;
         if(wallHandles[wallIndex].y > height){
             activeWalls.shift();
             wallHandles.shift();
@@ -388,8 +440,8 @@ window.onload = function () {
     }
 
 
-    function isInside(ix, iy) {
-        let inside = distance(playerHandle.x, playerHandle.y, ix, iy) < radius * 1.5;
+    function isInside(x, y, ix, iy, radius) {
+        let inside = distance(x, y, ix, iy) < radius * 1.5;
         return inside;
     }
 
@@ -421,25 +473,26 @@ window.onload = function () {
 
     document.body.addEventListener("touchstart", function (event) {
         event.preventDefault();
-        if (event.touches.length === 1 && isInside(event.touches[0].pageX, event.touches[0].pageY)) {
-                document.body.addEventListener("touchmove", onTouchMove);
+        //if (event.touches.length === 1 && isInside(playerHandle.x, playerHandle.y, event.touches[0].pageX, event.touches[0].pageY, playerRadius)) {
+        if(dead == false) {
+            if (event.touches.length === 1) {
+                    document.body.addEventListener("touchmove", onTouchMove);
+                    document.body.addEventListener("touchend", onTouchEnd);
+            } else if (event.touches.length === 2) {
+                document.body.addEventListener("touchmove", onTouchRotate);
                 document.body.addEventListener("touchend", onTouchEnd);
-                //console.log("Touch is inside");
-        } else if (event.touches.length === 2) {
-            //event.preventDefault();
-            document.body.addEventListener("touchmove", onTouchRotate);
-            document.body.addEventListener("touchend", onTouchEnd);
-        } else if (event.touches.length === 3) {
-            /* event.preventDefault();
-            document.body.addEventListener("touchmove", onTouchRotate);
-            document.body.addEventListener("onclick", onTouchShoot);
-            document.body.addEventListener("touchend", onTouchEnd); */
+            }
+        } else {
+            if(isInside(width/2, height/2, event.touches[0].pageX, event.touches[0].pageY, 50)) {
+                dead = false;
+                console.log("Restart pressed");
+                startTime = Date.now();
+                timeOfLastObstacle = Date.now();
+                wallSpeed = 1.5;
+                requestAnimationFrame(draw);
+            }
         }
     }, {passive: false});
-
-    /* function onTouchShoot(event) {
-        boolean = true;
-    } */
 
     function onTouchRotate(event) {
         event.preventDefault();
@@ -448,52 +501,28 @@ window.onload = function () {
         let dx = touch1.pageX - touch2.pageX;
         let dy = touch1.pageY - touch2.pageY;
         let angle = Math.atan2(dy, dx) + 3/2 * Math.PI;
-        //console.log("Winkel: " + angle);
         playerHandle.rotation = angle;
         updateRotation();
     }
 
     function onTouchMove(event) {
-        /* if (event.touches[0].clientX < playerHandle.x) {
-            playerHandle.x = event.touches[0].clientX + playerHandle.x - rectangleWidth / 2;
-        } else if (event.touches[0].clientX > playerHandle.x) {
-            playerHandle.x = event.touches[0].clientX - playerHandle.x - rectangleWidth / 2;
-        } */
-
         playerHandle.x = event.touches[0].clientX;
         updateRotation();
+
     }
 
     function updateRotation() {     //tracks the tip of the player when rotated
-        playerHandle.x_tip =  playerHandle.x + (radius + 13) * Math.sin(playerHandle.rotation);
+        playerHandle.x_tip =  playerHandle.x + (playerRadius + 13) * Math.sin(playerHandle.rotation);
         if (playerHandle.rotation === 0) {
             playerHandle.y_tip = playerHandle.y - 48;
         } else {
-            playerHandle.y_tip = playerHandle.y + (radius + 13) * -Math.cos(playerHandle.rotation);
+            playerHandle.y_tip = playerHandle.y + (playerRadius + 13) * -Math.cos(playerHandle.rotation);
         }
     }
 
     function onTouchEnd(event) {
         document.body.removeEventListener("touchmove", onTouchMove);
         document.body.removeEventListener("touchend", onTouchEnd);
-    }
-
-    //store the fingers in an array
-    let fingers = [];
-    function setFingers(touches) {
-        for (let t of touches) {
-            fingers[t.identifier] = {
-                x: t.pageX,
-                y: t.pageY,
-            }
-        }
-    }
-
-    function rmFingers(touches) {
-        for (let t of touches) {
-            console.log("rm", t);
-            fingers[t.identifier] = undefined
-        }
     }
 
 }
